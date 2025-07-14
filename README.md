@@ -127,13 +127,13 @@ celery --app src.celery_app.app flower
 
 Разработано с ❤️ на FastAPI и Celery. Делитесь своими мыслями и открывайте issues!
 
-<img src="/image/1" style="display: block; margin: auto;">
-<img src="/image/2" style="display: block; margin: auto;">
-<img src="/image/3" style="display: block; margin: auto;">
-<img src="/image/4" style="display: block; margin: auto;">
-<img src="/image/5" style="display: block; margin: auto;">
-<img src="/image/6" style="display: block; margin: auto;">
-<img src="/image/7" style="display: block; margin: auto;">
-<img src="/image/8" style="display: block; margin: auto;">
+<img src="/image/1.png" style="display: block; margin: auto;">
+<img src="/image/2.png" style="display: block; margin: auto;">
+<img src="/image/3.png" style="display: block; margin: auto;">
+<img src="/image/4.png" style="display: block; margin: auto;">
+<img src="/image/5.png" style="display: block; margin: auto;">
+<img src="/image/6.png" style="display: block; margin: auto;">
+<img src="/image/7.png" style="display: block; margin: auto;">
+<img src="/image/8.png" style="display: block; margin: auto;">
 
 
