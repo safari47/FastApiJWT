@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT API Квест</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding-top: 20px;
+            padding-bottom: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        .card-header {
+            background-color: #4a6baf;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            padding: 12px 20px;
+        }
+        .api-result {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+        .tutorial-card {
+            border-left: 5px solid #4a6baf;
+        }
+        .tutorial-section {
+            display: none;
+        }
+        .tutorial-section.active {
+            display: block;
+        }
+        .step-indicator {
+            margin-bottom: 30px;
+        }
+        .step-indicator .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 3px;
+            font-weight: bold;
+        }
+        .step-indicator .step.active {
+            background-color: #4a6baf;
+            color: white;
+        }
+        .step-indicator .step.completed {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-primary {
+            background-color: #4a6baf;
+            border-color: #4a6baf;
+        }
+        .btn-primary:hover {
+            background-color: #3a5a9f;
+            border-color: #3a5a9f;
+        }
+        .btn-next {
+            float: right;
+        }
+        .btn-prev {
+            float: left;
+        }
+        .explanation {
+            background-color: #e9f2ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4a6baf;
+        }
+        .error-explanation {
+            background-color: #fff0f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 5px solid #dc3545;
+            display: none;
+        }
+        .success-explanation {
+            background-color: #f0fff0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 5px solid #28a745;
+            display: none;
+        }
+        .flow-diagram {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px dashed #4a6baf;
+            text-align: center;
+        }
+        .flow-arrow {
+            font-size: 24px;
+            color: #4a6baf;
+            margin: 10px 0;
+        }
+        .cookie-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 20px;
+            border: 1px dashed #6c757d;
+        }
+        .cookie-title {
+            font-weight: bold;
+            color: #495057;
+        }
+        .cookie-data {
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .badge-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .badge-item {
+            display: inline-block;
+            margin: 0 10px;
+            text-align: center;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+        .badge-item.earned {
+            opacity: 1;
+        }
+        .badge-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .progress-bar-container {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4a6baf;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        h3 {
+            color: #3a5a9f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-3">JWT API Квест</h1>
+        <p class="text-center text-muted mb-4">Интерактивное руководство по работе с JWT авторизацией</p>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="step-indicator text-center" id="stepIndicator">
+            <!-- Шаги генерируются динамически -->
+        </div>
+
+        <!-- Секция приветствия -->
+        <div class="tutorial-section active" id="step-1">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 1: Знакомство с JWT авторизацией</div>
+                <div class="card-body">
+                    <h3>Что такое JWT?</h3>
+                    <div class="explanation">
+                        <p><strong>JWT (JSON Web Token)</strong> - это компактный и самодостаточный способ безопасной передачи информации между сторонами в виде JSON объекта.</p>
+                        <p>JWT состоит из трёх частей:</p>
+                        <ul>
+                            <li><strong>Заголовок (Header)</strong> - содержит тип токена и алгоритм шифрования</li>
+                            <li><strong>Полезная нагрузка (Payload)</strong> - содержит утверждения (claims) о пользователе</li>
+                            <li><strong>Подпись (Signature)</strong> - гарантирует целостность данных</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>Как работает JWT в нашем API?</h3>
+                    <div class="flow-diagram">
+                        <div class="row">
+                            <div class="col-5">Клиент (браузер)</div>
+                            <div class="col-2">→</div>
+                            <div class="col-5">Сервер (FastAPI)</div>
+                        </div>
+                        <div class="flow-arrow">⬇</div>
+                        <div>1. Регистрация пользователя</div>
+                        <div class="flow-arrow">⬇</div>
+                        <div>2. Вход (логин) и получение токенов в куки</div>
+                        <div class="flow-arrow">⬇</div>
+                        <div>3. Запросы к защищенным ресурсам с токенами</div>
+                        <div class="flow-arrow">⬇</div>
+                        <div>4. Обновление токенов при необходимости</div>
+                        <div class="flow-arrow">⬇</div>
+                        <div>5. Выход (удаление токенов)</div>
+                    </div>
+                    
+                    <h3>Что мы будем изучать?</h3>
+                    <p>В этом интерактивном руководстве мы последовательно пройдем все этапы работы с API:</p>
+                    <ol>
+                        <li>Регистрация нового пользователя</li>
+                        <li>Вход в систему</li>
+                        <li>Получение информации о пользователе</li>
+                        <li>Обновление профиля</li>
+                        <li>Обновление токенов</li>
+                        <li>Выход из системы</li>
+                    </ol>
+                    
+                    <div class="cookie-container">
+                        <p class="cookie-title">В нашем API используется 2 токена:</p>
+                        <ul>
+                            <li><strong>access_token</strong> - короткоживущий токен для доступа к ресурсам (обычно 15-30 минут)</li>
+                            <li><strong>refresh_token</strong> - долгоживущий токен для обновления access_token (обычно несколько дней)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-primary btn-next" onclick="nextStep()">Начать приключение →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция регистрации -->
+        <div class="tutorial-section" id="step-2">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 2: Регистрация пользователя</div>
+                <div class="card-body">
+                    <h3>Регистрация нового пользователя</h3>
+                    <div class="explanation">
+                        <p><strong>POST /auth/register</strong> - создает нового пользователя в системе.</p>
+                        <p>При успешной регистрации пользователя:</p>
+                        <ul>
+                            <li>Пароль хешируется с помощью bcrypt (никогда не хранится в открытом виде)</li>
+                            <li>Создается запись в базе данных</li>
+                            <li>Автоматически создается пустой профиль пользователя</li>
+                        </ul>
+                    </div>
+                    
+                    <form id="registerForm" class="mb-4">
+                        <div class="mb-3">
+                            <label for="regEmail" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="regEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regPassword" class="form-label">Пароль:</label>
+                            <input type="password" class="form-control" id="regPassword" required>
+                            <div class="form-text">Пароль должен содержать не менее 6 символов.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                    </form>
+                    
+                    <div class="api-result" id="registerResult"></div>
+                    
+                    <div class="error-explanation" id="registerError">
+                        <h5>Что может пойти не так?</h5>
+                        <ul>
+                            <li><strong>409 Conflict</strong>: Пользователь с таким email уже существует</li>
+                            <li><strong>422 Unprocessable Entity</strong>: Некорректный формат email или слишком короткий пароль</li>
+                        </ul>
+                        <p>Эти проверки выполняются на сервере для обеспечения целостности данных.</p>
+                    </div>
+                    
+                    <div class="success-explanation" id="registerSuccess">
+                        <h5>Что происходит на сервере?</h5>
+                        <ol>
+                            <li>Проверка уникальности email</li>
+                            <li>Хеширование пароля с солью</li>
+                            <li>Создание записи в таблице users</li>
+                            <li>Создание пустой записи в таблице profiles, связанной с пользователем</li>
+                        </ol>
+                        <p>На этом этапе пользователь создан, но не аутентифицирован (токены не выданы).</p>
+                    </div>
+                    
+                    <div class="flow-diagram">
+                        <div><strong>Процесс регистрации:</strong></div>
+                        <div>Клиент отправляет email и пароль</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Сервер проверяет, не занят ли email</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Пароль хешируется (bcrypt)</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Пользователь сохраняется в БД</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Создается профиль пользователя</div>
+                    </div>
+                    
+                    <div class="mt-4 clearfix">
+                        <button class="btn btn-secondary btn-prev" onclick="prevStep()">← Назад</button>
+                        <button class="btn btn-primary btn-next" id="registerNextBtn" onclick="nextStep()" disabled>Продолжить →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция входа -->
+        <div class="tutorial-section" id="step-3">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 3: Вход в систему</div>
+                <div class="card-body">
+                    <h3>Аутентификация пользователя</h3>
+                    <div class="explanation">
+                        <p><strong>POST /auth/login</strong> - проверяет учетные данные и выдает JWT токены.</p>
+                        <p>При успешной аутентификации:</p>
+                        <ul>
+                            <li>Сервер генерирует два JWT токена: access и refresh</li>
+                            <li>Токены устанавливаются в httpOnly куки</li>
+                            <li>Access токен используется для доступа к защищенным ресурсам</li>
+                            <li>Refresh токен нужен для обновления access токена, когда тот истечет</li>
+                        </ul>
+                    </div>
+                    
+                    <form id="loginForm" class="mb-4">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Пароль:</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                    </form>
+                    
+                    <div class="api-result" id="loginResult"></div>
+                    
+                    <div class="error-explanation" id="loginError">
+                        <h5>Что может пойти не так?</h5>
+                        <ul>
+                            <li><strong>401 Unauthorized</strong>: Неверный email или пароль</li>
+                            <li><strong>422 Unprocessable Entity</strong>: Некорректный формат данных в запросе</li>
+                        </ul>
+                        <p>Сервер никогда не указывает конкретно, что именно неверно (email или пароль) - это мера безопасности.</p>
+                    </div>
+                    
+                    <div class="success-explanation" id="loginSuccess">
+                        <h5>Что происходит на сервере?</h5>
+                        <ol>
+                            <li>Поиск пользователя по email в базе данных</li>
+                            <li>Сравнение хеша введенного пароля с хешем из базы</li>
+                            <li>Генерация access токена (срок жизни - минуты)</li>
+                            <li>Генерация refresh токена (срок жизни - дни)</li>
+                            <li>Установка токенов в httpOnly куки</li>
+                        </ol>
+                        <p>Теперь вы аутентифицированы и можете обращаться к защищенным ресурсам!</p>
+                    </div>
+                    
+                    <div class="cookie-container">
+                        <p class="cookie-title">В куках вашего браузера сейчас:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>access_token</strong></p>
+                                <p class="cookie-data" id="accessTokenPreview">Нет токена</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>refresh_token</strong></p>
+                                <p class="cookie-data" id="refreshTokenPreview">Нет токена</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-diagram">
+                        <div><strong>Процесс аутентификации:</strong></div>
+                        <div>Клиент отправляет email и пароль</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Сервер проверяет учетные данные</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Генерируются JWT токены</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Токены устанавливаются в куки</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Клиент получает ответ об успехе</div>
+                    </div>
+                    
+                    <div class="mt-4 clearfix">
+                        <button class="btn btn-secondary btn-prev" onclick="prevStep()">← Назад</button>
+                        <button class="btn btn-primary btn-next" id="loginNextBtn" onclick="nextStep()" disabled>Продолжить →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция информации о пользователе -->
+        <div class="tutorial-section" id="step-4">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 4: Получение информации о пользователе</div>
+                <div class="card-body">
+                    <h3>Доступ к защищенным ресурсам</h3>
+                    <div class="explanation">
+                        <p><strong>GET /me</strong> - получает информацию о текущем пользователе.</p>
+                        <p>Для доступа к этому эндпоинту:</p>
+                        <ul>
+                            <li>Клиент должен отправить запрос с access_token в куках</li>
+                            <li>Сервер проверяет валидность токена</li>
+                            <li>Если токен валиден, сервер возвращает данные пользователя</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <button id="getMeBtn" class="btn btn-primary">Получить информацию о пользователе</button>
+                    </div>
+                    
+                    <div class="api-result" id="getMeResult"></div>
+                    
+                    <div class="error-explanation" id="getMeError">
+                        <h5>Что может пойти не так?</h5>
+                        <ul>
+                            <li><strong>401 Unauthorized</strong>: Отсутствует или недействителен access токен</li>
+                            <li><strong>403 Forbidden</strong>: У пользователя недостаточно прав</li>
+                        </ul>
+                        <p>Если access токен истек, используйте ручку <code>/auth/refresh</code> для его обновления.</p>
+                    </div>
+                    
+                    <div class="success-explanation" id="getMeSuccess">
+                        <h5>Что происходит на сервере?</h5>
+                        <ol>
+                            <li>Извлечение access токена из куки</li>
+                            <li>Проверка подписи токена публичным ключом</li>
+                            <li>Проверка срока действия токена</li>
+                            <li>Извлечение идентификатора пользователя (sub) из токена</li>
+                            <li>Загрузка данных пользователя и его профиля из базы</li>
+                            <li>Сериализация данных в JSON и отправка клиенту</li>
+                        </ol>
+                        <p>В ответе вы видите как базовую информацию пользователя, так и его профиль!</p>
+                    </div>
+                    
+                    <div class="flow-diagram">
+                        <div><strong>Процесс получения данных:</strong></div>
+                        <div>Клиент отправляет запрос с куками</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Middleware извлекает и проверяет токен</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Извлекается ID пользователя из токена</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Загружаются данные пользователя из БД</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Данные возвращаются клиенту</div>
+                    </div>
+                    
+                    <div class="mt-4 clearfix">
+                        <button class="btn btn-secondary btn-prev" onclick="prevStep()">← Назад</button>
+                        <button class="btn btn-primary btn-next" id="getMeNextBtn" onclick="nextStep()" disabled>Продолжить →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция обновления профиля -->
+        <div class="tutorial-section" id="step-5">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 5: Обновление профиля</div>
+                <div class="card-body">
+                    <h3>Изменение данных пользователя</h3>
+                    <div class="explanation">
+                        <p><strong>PATCH /me</strong> - обновляет данные профиля текущего пользователя.</p>
+                        <p>Особенности:</p>
+                        <ul>
+                            <li>Требуется действующий access токен</li>
+                            <li>Можно обновлять как все поля, так и отдельные</li>
+                            <li>Обновление происходит только для текущего пользователя</li>
+                        </ul>
+                    </div>
+                    
+                    <form id="updateProfileForm" class="mb-4">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Имя пользователя:</label>
+                            <input type="text" class="form-control" id="username">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Биография:</label>
+                            <textarea class="form-control" id="bio" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active">
+                            <label class="form-check-label" for="is_active">Активный аккаунт</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="birthday" class="form-label">Дата рождения:</label>
+                            <input type="date" class="form-control" id="birthday">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Телефон:</label>
+                            <input type="tel" class="form-control" id="phone_number">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Обновить профиль</button>
+                    </form>
+                    
+                    <div class="api-result" id="updateProfileResult"></div>
+                    
+                    <div class="error-explanation" id="updateProfileError">
+                        <h5>Что может пойти не так?</h5>
+                        <ul>
+                            <li><strong>401 Unauthorized</strong>: Отсутствует или недействителен токен</li>
+                            <li><strong>422 Unprocessable Entity</strong>: Некорректный формат данных</li>
+                            <li><strong>409 Conflict</strong>: Имя пользователя уже занято</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="success-explanation" id="updateProfileSuccess">
+                        <h5>Что происходит на сервере?</h5>
+                        <ol>
+                            <li>Проверка токена и идентификация пользователя</li>
+                            <li>Валидация полученных данных</li>
+                            <li>Обновление только переданных полей (остальные остаются без изменений)</li>
+                            <li>Возврат обновленных данных пользователя</li>
+                        </ol>
+                        <p>Обратите внимание, что обновляется только профиль, а не основные данные пользователя (email, пароль).</p>
+                    </div>
+                    
+                    <div class="flow-diagram">
+                        <div><strong>Процесс обновления профиля:</strong></div>
+                        <div>Клиент отправляет данные для обновления</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Сервер проверяет токен и права доступа</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Валидация входных данных</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Обновление записи профиля в БД</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Возврат обновленных данных клиенту</div>
+                    </div>
+                    
+                    <div class="mt-4 clearfix">
+                        <button class="btn btn-secondary btn-prev" onclick="prevStep()">← Назад</button>
+                        <button class="btn btn-primary btn-next" id="updateProfileNextBtn" onclick="nextStep()" disabled>Продолжить →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция обновления токена -->
+        <div class="tutorial-section" id="step-6">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 6: Обновление токена</div>
+                <div class="card-body">
+                    <h3>Работа с refresh токеном</h3>
+                    <div class="explanation">
+                        <p><strong>POST /auth/refresh</strong> - обновляет истекший access токен с помощью refresh токена.</p>
+                        <p>Зачем это нужно:</p>
+                        <ul>
+                            <li>Access токен имеет короткий срок жизни (обычно 15-30 минут)</li>
+                            <li>Когда он истекает, клиент получает ошибку 401</li>
+                            <li>Вместо повторного входа можно использовать refresh токен для получения нового access токена</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <button id="refreshBtn" class="btn btn-primary">Обновить токены</button>
+                    </div>
+                    
+                    <div class="api-result" id="refreshResult"></div>
+                    
+                    <div class="error-explanation" id="refreshError">
+                        <h5>Что может пойти не так?</h5>
+                        <ul>
+                            <li><strong>401 Unauthorized</strong>: Отсутствует или недействителен refresh токен</li>
+                            <li><strong>403 Forbidden</strong>: Refresh токен истек или был отозван</li>
+                        </ul>
+                        <p>Если refresh токен недействителен, пользователю придется войти заново.</p>
+                    </div>
+                    
+                    <div class="success-explanation" id="refreshSuccess">
+                        <h5>Что происходит на сервере?</h5>
+                        <ol>
+                            <li>Извлечение refresh токена из куки</li>
+                            <li>Проверка подписи и срока действия токена</li>
+                            <li>Извлечение идентификатора пользователя из токена</li>
+                            <li>Генерация нового access токена</li>
+                            <li>Установка нового токена в куки</li>
+                        </ol>
+                        <p>Некоторые реализации также обновляют и сам refresh токен (ротация токенов) для повышения безопасности.</p>
+                    </div>
+                    
+                    <div class="cookie-container">
+                        <p class="cookie-title">Обновление токенов:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Старый access_token</strong></p>
+                                <p class="cookie-data" id="oldAccessToken">Недоступен</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Новый access_token</strong></p>
+                                <p class="cookie-data" id="newAccessToken">Еще не сгенерирован</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-diagram">
+                        <div><strong>Процесс обновления токенов:</strong></div>
+                        <div>Клиент отправляет запрос с refresh токеном</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Сервер проверяет refresh токен</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Генерируется новый access токен</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Новый токен устанавливается в куки</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Клиент получает ответ об успехе</div>
+                    </div>
+                    
+                    <div class="mt-4 clearfix">
+                        <button class="btn btn-secondary btn-prev" onclick="prevStep()">← Назад</button>
+                        <button class="btn btn-primary btn-next" id="refreshNextBtn" onclick="nextStep()" disabled>Продолжить →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция выхода -->
+        <div class="tutorial-section" id="step-7">
+            <div class="card tutorial-card">
+                <div class="card-header">Шаг 7: Выход из системы</div>
+                <div class="card-body">
+                    <h3>Завершение сессии</h3>
+                    <div class="explanation">
+                        <p><strong>POST /auth/logout</strong> - выход из системы, удаление токенов.</p>
+                        <p>Что происходит при выходе:</p>
+                        <ul>
+                            <li>Удаляются куки с токенами</li>
+                            <li>Пользователь больше не может обращаться к защищенным ресурсам</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <button id="logoutBtn" class="btn btn-danger">Выйти из системы</button>
+                    </div>
+                    
+                    <div class="api-result" id="logoutResult"></div>
+                    
+                    <div class="error-explanation" id="logoutError">
+                        <h5>Что может пойти не так?</h5>
+                        <ul>
+                            <li>Ошибки при выходе встречаются редко</li>
+                            <li>Даже если запрос не дойдет до сервера, клиент может самостоятельно удалить куки</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="success-explanation" id="logoutSuccess">
+                        <h5>Что происходит на сервере?</h5>
+                        <ol>
+                            <li>Удаление куки access_token</li>
+                            <li>Удаление куки refresh_token</li>
+                        </ol>
+                        <p>В более продвинутых реализациях также происходит добавление refresh токена в черный список для предотвращения его повторного использования.</p>
+                    </div>
+                    
+                    <div class="cookie-container">
+                        <p class="cookie-title">Состояние куков после выхода:</p>
+                        <div id="cookiesAfterLogout">
+                            <p>Обе куки (access_token и refresh_token) должны быть удалены.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-diagram">
+                        <div><strong>Процесс выхода:</strong></div>
+                        <div>Клиент отправляет запрос на выход</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Сервер удаляет куки с токенами</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Клиент получает ответ об успехе</div>
+                        <div class="flow-arrow">↓</div>
+                        <div>Браузер удаляет куки с токенами</div>
+                    </div>
+                    
+                    <div class="mt-4 clearfix">
+                        <button class="btn btn-secondary btn-prev" onclick="prevStep()">← Назад</button>
+                        <button class="btn btn-primary btn-next" id="logoutNextBtn" onclick="nextStep()" disabled>Завершить →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Секция завершения -->
+        <div class="tutorial-section" id="step-8">
+            <div class="card tutorial-card">
+                <div class="card-header">Поздравляем! Вы завершили квест</div>
+                <div class="card-body">
+                    <h3 class="text-center mb-4">Вы освоили JWT авторизацию!</h3>
+                    
+                    <div class="text-center mb-4">
+                        <span class="display-1">🏆</span>
+                    </div>
+                    
+                    <div class="explanation">
+                        <p>В этом квесте вы изучили:</p>
+                        <ul>
+                            <li>Базовые принципы работы JWT</li>
+                            <li>Процесс регистрации и аутентификации</li>
+                            <li>Доступ к защищенным ресурсам</li>
+                            <li>Обновление профиля пользователя</li>
+                            <li>Работу с refresh токенами</li>
+                            <li>Безопасный выход из системы</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="badge-section">
+                        <h4 class="mb-3">Полученные достижения:</h4>
+                        <div class="row justify-content-center">
+                            <div class="col-4 col-md-2 badge-item" id="badge-register">
+                                <div class="badge-icon">👤</div>
+                                <div>Регистрация</div>
+                            </div>
+                            <div class="col-4 col-md-2 badge-item" id="badge-login">
+                                <div class="badge-icon">🔑</div>
+                                <div>Вход</div>
+                            </div>
+                            <div class="col-4 col-md-2 badge-item" id="badge-profile">
+                                <div class="badge-icon">📝</div>
+                                <div>Профиль</div>
+                            </div>
+                            <div class="col-4 col-md-2 badge-item" id="badge-update">
+                                <div class="badge-icon">✏️</div>
+                                <div>Обновление</div>
+                            </div>
+                            <div class="col-4 col-md-2 badge-item" id="badge-refresh">
+                                <div class="badge-icon">🔄</div>
+                                <div>Токены</div>
+                            </div>
+                            <div class="col-4 col-md-2 badge-item" id="badge-logout">
+                                <div class="badge-icon">🚪</div>
+                                <div>Выход</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-5">
+                        <button class="btn btn-lg btn-primary" onclick="resetQuest()">Начать заново</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Bootstrap и JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Базовый URL для API
+        const API_URL = 'http://127.0.0.1:8000';
+        
+        // Текущий шаг
+        let currentStep = 1;
+        const totalSteps = 8;
+        
+        // Достижения
+        const badges = {
+            register: false,
+            login: false,
+            profile: false,
+            update: false,
+            refresh: false,
+            logout: false
+        };
+        
+        // Инициализация индикаторов шагов
+        function initStepIndicators() {
+            const container = document.getElementById('stepIndicator');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= totalSteps; i++) {
+                const step = document.createElement('div');
+                step.className = `step ${i === currentStep ? 'active' : ''}`;
+                step.innerText = i;
+                container.appendChild(step);
+            }
+        }
+        
+        // Обновление индикаторов шагов
+        function updateStepIndicators() {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                } else if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+            
+            // Обновление прогресс-бара
+            const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+        
+        // Переход к следующему шагу
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                updateStepIndicators();
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        // Переход к предыдущему шагу
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                updateStepIndicators();
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        // Функция для отображения результата в указанном элементе
+        function showResult(elementId, data, success = true) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('text-danger', 'text-success');
+            element.classList.add(success ? 'text-success' : 'text-danger');
+            
+            if (typeof data === 'object') {
+                element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } else {
+                element.textContent = data;
+            }
+        }
+        
+        // Функция для отображения объяснений
+        function showExplanation(baseId, success = true) {
+            document.getElementById(`${baseId}Error`).style.display = success ? 'none' : 'block';
+            document.getElementById(`${baseId}Success`).style.display = success ? 'block' : 'none';
+        }
+        
+        // Функция для разрешения перехода к следующему шагу
+        function enableNextStep(buttonId) {
+            document.getElementById(buttonId).disabled = false;
+        }
+        
+        // Получение токенов для отображения (имитация)
+        function updateTokenPreview(isLogin = true) {
+            const accessTokenEl = document.getElementById('accessTokenPreview');
+            const refreshTokenEl = document.getElementById('refreshTokenPreview');
+            
+            if (isLogin) {
+                accessTokenEl.textContent = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2lkIiwiZXhwIjoxNjMzMjMyNDAwfQ...';
+                refreshTokenEl.textContent = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2lkIiwiZXhwIjoxNjM0NDMyNDAwfQ...';
+            } else {
+                accessTokenEl.textContent = 'Нет токена';
+                refreshTokenEl.textContent = 'Нет токена';
+            }
+        }
+        
+        // Обновить достижения
+        function updateBadges() {
+            Object.keys(badges).forEach(badge => {
+                const element = document.getElementById(`badge-${badge}`);
+                if (badges[badge] && element) {
+                    element.classList.add('earned');
+                }
+            });
+        }
+        
+        // Функция для выполнения запросов с обработкой ошибок
+        async function makeRequest(url, method, body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: body ? { 'Content-Type': 'application/json' } : {},
+                    credentials: 'include' // Важно для передачи куки
+                };
+                
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(`${API_URL}${url}`, options);
+                let data;
+                
+                try {
+                    data = await response.json();
+                } catch {
+                    data = {};
+                }
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || `Ошибка ${response.status}: ${response.statusText}`);
+                }
+                
+                return { success: true, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message, status: error.status || 500 };
+            }
+        }
+        
+        // Сброс квеста
+        function resetQuest() {
+            currentStep = 1;
+            Object.keys(badges).forEach(key => badges[key] = false);
+            
+            // Скрытие всех секций
+            document.querySelectorAll('.tutorial-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Показ первой секции
+            document.getElementById('step-1').classList.add('active');
+            
+            // Обновление индикаторов
+            updateStepIndicators();
+            updateBadges();
+            
+            // Блокировка кнопок перехода
+            document.getElementById('registerNextBtn').disabled = true;
+            document.getElementById('loginNextBtn').disabled = true;
+            document.getElementById('getMeNextBtn').disabled = true;
+            document.getElementById('updateProfileNextBtn').disabled = true;
+            document.getElementById('refreshNextBtn').disabled = true;
+            document.getElementById('logoutNextBtn').disabled = true;
+            
+            // Очистка результатов
+            document.querySelectorAll('.api-result').forEach(result => {
+                result.innerHTML = '';
+            });
+            
+            // Скрытие объяснений
+            document.querySelectorAll('.error-explanation, .success-explanation').forEach(explanation => {
+                explanation.style.display = 'none';
+            });
+            
+            // Сброс токенов
+            updateTokenPreview(false);
+            
+            window.scrollTo(0, 0);
+        }
+        
+        // ===== Обработчики событий =====
+        
+        // Регистрация
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            const result = await makeRequest('/auth/register', 'POST', { email, password });
+            
+            if (result.success) {
+                showResult('registerResult', 'Регистрация прошла успешно!', true);
+                showExplanation('register', true);
+                enableNextStep('registerNextBtn');
+                badges.register = true;
+                updateBadges();
+            } else {
+                showResult('registerResult', `Ошибка: ${result.error}`, false);
+                showExplanation('register', false);
+            }
+        });
+        
+        // Вход
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const result = await makeRequest('/auth/login', 'POST', { email, password });
+            
+            if (result.success) {
+                showResult('loginResult', 'Авторизация успешна!', true);
+                showExplanation('login', true);
+                updateTokenPreview(true);
+                enableNextStep('loginNextBtn');
+                badges.login = true;
+                updateBadges();
+            } else {
+                showResult('loginResult', `Ошибка: ${result.error}`, false);
+                showExplanation('login', false);
+                updateTokenPreview(false);
+            }
+        });
+        
+        // Получение информации о пользователе
+        document.getElementById('getMeBtn').addEventListener('click', async function() {
+            const result = await makeRequest('/me', 'GET');
+            
+            if (result.success) {
+                showResult('getMeResult', result.data, true);
+                showExplanation('getMe', true);
+                enableNextStep('getMeNextBtn');
+                badges.profile = true;
+                updateBadges();
+            } else {
+                showResult('getMeResult', `Ошибка: ${result.error}`, false);
+                showExplanation('getMe', false);
+            }
+        });
+        
+        // Обновление профиля
+        document.getElementById('updateProfileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const profileData = {
+                username: document.getElementById('username').value || null,
+                bio: document.getElementById('bio').value || null,
+                is_active: document.getElementById('is_active').checked,
+                birthday: document.getElementById('birthday').value || null,
+                phone_number: document.getElementById('phone_number').value || null
+            };
+            
+            const result = await makeRequest('/me', 'PATCH', profileData);
+            
+            if (result.success) {
+                showResult('updateProfileResult', result.data, true);
+                showExplanation('updateProfile', true);
+                enableNextStep('updateProfileNextBtn');
+                badges.update = true;
+                updateBadges();
+            } else {
+                showResult('updateProfileResult', `Ошибка: ${result.error}`, false);
+                showExplanation('updateProfile', false);
+            }
+        });
+        
+        // Обновление токена
+        document.getElementById('refreshBtn').addEventListener('click', async function() {
+            // Сохраняем старый токен для демонстрации
+            document.getElementById('oldAccessToken').textContent = document.getElementById('accessTokenPreview').textContent;
+            
+            const result = await makeRequest('/auth/refresh', 'POST');
+            
+            if (result.success) {
+                showResult('refreshResult', 'Токены успешно обновлены', true);
+                showExplanation('refresh', true);
+                document.getElementById('newAccessToken').textContent = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyX2lkIiwiZXhwIjoxNjMzMjQyNDAwfQ...';
+                document.getElementById('accessTokenPreview').textContent = document.getElementById('newAccessToken').textContent;
+                enableNextStep('refreshNextBtn');
+                badges.refresh = true;
+                updateBadges();
+            } else {
+                showResult('refreshResult', `Ошибка: ${result.error}`, false);
+                showExplanation('refresh', false);
+                document.getElementById('newAccessToken').textContent = 'Ошибка обновления';
+            }
+        });
+        
+        // Выход
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            const result = await makeRequest('/auth/logout', 'POST');
+            
+            if (result.success) {
+                showResult('logoutResult', 'Вы успешно вышли из системы', true);
+                showExplanation('logout', true);
+                document.getElementById('cookiesAfterLogout').innerHTML = '<div class="alert alert-success">Токены успешно удалены!</div>';
+                updateTokenPreview(false);
+                enableNextStep('logoutNextBtn');
+                badges.logout = true;
+                updateBadges();
+            } else {
+                showResult('logoutResult', `Ошибка: ${result.error}`, false);
+                showExplanation('logout', false);
+                document.getElementById('cookiesAfterLogout').innerHTML = '<div class="alert alert-danger">Ошибка удаления токенов!</div>';
+            }
+        });
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            initStepIndicators();
+            updateStepIndicators();
+        });
+    </script>
+</body>
+</html>
